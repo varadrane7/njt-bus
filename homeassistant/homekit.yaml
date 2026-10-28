@@ -1,0 +1,28 @@
+# Apple Home can't show "minutes" or conditional colors. Workaround: lux-type proxy
+# sensors (tile reads e.g. "7 lx"). Add to `template:` in configuration.yaml, then in
+# HomeKit Bridge include sensor.next_158_in_homekit / sensor.next_126_in_homekit.
+template:
+  - sensor:
+      - name: "Next 158 in homekit"
+        unique_id: njt_next_158_in_homekit
+        device_class: illuminance
+        unit_of_measurement: lx
+        state: "{{ states('sensor.next_158_in') | float(none) }}"
+        availability: "{{ states('sensor.next_158_in') | is_number }}"
+      - name: "Next 126 in homekit"
+        unique_id: njt_next_126_in_homekit
+        device_class: illuminance
+        unit_of_measurement: lx
+        state: "{{ states('sensor.next_126_in') | float(none) }}"
+        availability: "{{ states('sensor.next_126_in') | is_number }}"
+  # OPTIONAL: "time to leave" flags for Home-app automations/notifications.
+  # Tune the 6 to walk time + buffer.
+  - binary_sensor:
+      - name: "Leave for 158"
+        unique_id: njt_leave_158
+        device_class: motion
+        state: "{{ states('sensor.next_158_in') | float(99) <= 6 }}"
+      - name: "Leave for 126"
+        unique_id: njt_leave_126
+        device_class: motion
+        state: "{{ states('sensor.next_126_in') | float(99) <= 6 }}"

@@ -1,0 +1,23 @@
+services:
+  njt-bus:
+    build: .
+    container_name: njt-bus
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      TZ: America/New_York
+      NJT_BASE_URL: https://pcsdata.njtransit.com/api/GTFSG2
+    volumes:
+      - njt-data:/data # caches static GTFS zip (~MBs) between restarts
+    ports:
+      - "8085:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+
+volumes:
+  njt-data:

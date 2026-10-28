@@ -1,0 +1,28 @@
+# Built-in Markdown card: left/right rows, colored by minutes, plus "Also in" line.
+# Colors: <=5 red, 6 yellow, >=7 green, grey when no data. Edit the three hex values to taste.
+# Add a bus: append another ('route', 'sensor.entity', 'Destination') to `buses`.
+type: markdown
+content: >-
+  {% set buses = [
+       ('158', 'sensor.next_158_in', 'New York'),
+       ('126', 'sensor.next_126_in', 'Hoboken'),
+     ] %}
+  <table width="100%">
+  {% for route, ent, dest in buses %}
+  {% set raw = states(ent) %}
+  {% set m = (raw | int) if (raw | is_number) else none %}
+  {% set color = '#9e9e9e' if m is none else ('#e53935' if m <= 5 else ('#fbc02d' if m == 6 else '#43a047')) %}
+  {% set icon = 'mdi:bus-clock' if m is none else ('mdi:bus-alert' if m <= 5 else 'mdi:bus') %}
+  {% set nxt = state_attr(ent, 'next') or [] %}
+  {% set src = state_attr(ent, 'source') %}
+  <tr>
+  <td width="10%"><font color="{{ color }}"><ha-icon icon="{{ icon }}"></ha-icon></font></td>
+  <td>Next {{ route }} <small>→ {{ dest }}</small></td>
+  <td align="right"><font color="{{ color }}"><b>{% if m is not none %}{{ m }} min{% elif raw == 'unavailable' %}offline{% else %}no bus{% endif %}</b></font>{% if m is not none and src == 'scheduled' %} <small>(sched)</small>{% elif m is not none and src == 'gps' %} <small>(est)</small>{% endif %}</td>
+  </tr>
+  <tr>
+  <td></td>
+  <td colspan="2"><small>Also in {% if nxt %}{% for n in nxt %}{{ n.minutes }} min{{ 's' if n.minutes != 1 }}{{ ', ' if not loop.last }}{% endfor %}{% else %}—{% endif %}</small></td>
+  </tr>
+  {% endfor %}
+  </table>

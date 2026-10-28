@@ -1,0 +1,37 @@
+# NJ Transit bus ETAs from the njt-bus sidecar.
+# Install: copy to <HA config dir>/packages/njt_bus.yaml (see README steps).
+# EDIT the resource URL below to wherever Home Assistant can reach the sidecar.
+
+rest:
+  - resource: http://192.168.1.50:8085/api/next # EDIT: host running the sidecar
+    scan_interval: 30
+    timeout: 10
+    sensor:
+      - name: "Next 158 in"
+        unique_id: njt_next_158_in
+        icon: mdi:bus-clock
+        unit_of_measurement: min
+        value_template: >
+          {% set m = value_json['158'].minutes %}{{ m if m is not none else none }}
+        json_attributes_path: "$['158']"
+        json_attributes:
+          [headsign, eta, source, delay_min, vehicle_id, status, next]
+
+      - name: "Next 126 in"
+        unique_id: njt_next_126_in
+        icon: mdi:bus-clock
+        unit_of_measurement: min
+        value_template: >
+          {% set m = value_json['126'].minutes %}{{ m if m is not none else none }}
+        json_attributes_path: "$['126']"
+        json_attributes:
+          [headsign, eta, source, delay_min, vehicle_id, status, next]
+
+# No history for these. Lists in packages merge with any existing recorder: block.
+recorder:
+  exclude:
+    entities:
+      - sensor.next_158_in
+      - sensor.next_126_in
+      - sensor.next_158_in_homekit
+      - sensor.next_126_in_homekit
